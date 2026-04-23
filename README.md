@@ -17,7 +17,7 @@
 </p>
 
 ---
-
+## Features
 ### 👤 Discord Stealer
 *   **Deep Account Scraper**: Captures `Email`, `Phone`, `MFA Status`, and `Account Creation Date`.
 *   **Token Retrieval**: Securely extracts and logs the user's current token.
