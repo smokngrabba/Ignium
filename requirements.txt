@@ -1,0 +1,8 @@
+requests
+psutil
+pycryptodome
+pywin32
+Pillow
+pyinstaller
+websocket-client
+cryptography
