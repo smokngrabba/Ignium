@@ -18,7 +18,7 @@
 
 ---
 
-### 👤 Discord Intelligence
+### 👤 Discord Stealer
 *   **Deep Account Scraper**: Captures `Email`, `Phone`, `MFA Status`, and `Account Creation Date`.
 *   **Token Retrieval**: Securely extracts and logs the user's current token.
 *   **Presence & Authority**: 
@@ -27,7 +27,7 @@
 *   **Monetization**: Full detection of `Nitro` status and linked `Billing Methods` (CC/PayPal).
 *   **Gift Codes**: Sweeps outbound outbound promotion codes.
 
-### 🌐 Secure Vault System
+### 🌐 Information Logging
 *   **Browser Harvesting**: Full extraction of `Passwords` and `Cookies` from Chrome, Edge, Opera, and Opera GX.
 *   **Automated ZIP**: Bundles all browser data into a secure, metadata-rich ZIP archive.
 *   **Live Analytics**: Reports ZIP `Filename` and `Size` directly to your dashboard.
@@ -71,8 +71,8 @@ The compiler will process your `tables.py` configuration and output a finished *
 
 ##  Future Roadmap
 *   [ ] **Discord Injection**: Native client persistence and real-time token grabbing.
-*   [ ] **Enhanced Decryption**: Next-gen decryption engine for modern browser updates.
-*   [ ] **Staged Obfuscation**: Multi-layer polymorphic encryption.
+*   [ ] **Enhanced Decryption**: Better decryption engine for modern browser updates.
+*   [ ] **Enhanced Obfuscation**: Better Obfuscation.
 
 ---
 
