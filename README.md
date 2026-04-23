@@ -78,7 +78,7 @@ The compiler will process your `tables.py` configuration and output a finished *
 
 ##  Acknowledgments
 
-While Ignium is built for the modern era, it stands on the shoulders of giants. Special thanks to the following sources for their inspiration and architectural guidance:
+While Ignium was built from the ground up, it wouldn't be here without the help from others. Special thanks to the following sources for their inspiration:
 *   **addi00000** (Empyrean)
 *   **rdimo**
 
