@@ -74,7 +74,7 @@ class Spinner:
         while not self.stop_event.is_set():
             spin_char = chars[i % len(chars)]
             faded_spinner = f"{bracket_l}{spin_char}{bracket_r}"
-            sys.stdout.write(f"\r                 {bracket_l}\033[37m$\033[0m{bracket_r} \033[37m{self.text}\033[0m {faded_spinner}")
+            sys.stdout.write(f"\r               {bracket_l}\033[37m$\033[0m{bracket_r} \033[37m{self.text}\033[0m {faded_spinner}")
             sys.stdout.flush(); i += 1; time.sleep(0.1)
     def __enter__(self):
         sys.stdout.write("\033[?25l")
@@ -84,7 +84,7 @@ class Spinner:
         self.stop_event.set(); self.thread.join()
         bracket_l = fade.purpleblue("[").replace('\n', '')
         bracket_r = fade.purpleblue("]").replace('\n', '')
-        sys.stdout.write(f"\r                 {bracket_l}\033[37m$\033[0m{bracket_r} \033[37m{self.text}\033[0m           \n")
+        sys.stdout.write(f"\r               {bracket_l}\033[37m$\033[0m{bracket_r} \033[37m{self.text}\033[0m           \n")
         sys.stdout.write("\033[?25h")
         sys.stdout.flush()
 
